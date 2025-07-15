@@ -24,7 +24,7 @@ const CONFIG: LayoutConfig = {
   },
 };
 
-// Font initialization (must be explicit literals)
+//  Font initialization (must be explicit literals)
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -37,7 +37,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// Component composition
+// 🧩 Component composition
 type RootLayoutProps = {
   children: React.ReactNode;
   agent?: React.ReactNode;
@@ -59,7 +59,7 @@ const RootLayoutContainer: React.FC<RootLayoutProps> = ({
   </html>
 );
 
-// Default export
+// 🚀 Default export
 export const metadata: Metadata = CONFIG.metadata;
 
 export default function RootLayout({
