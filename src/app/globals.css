@@ -1,44 +1,133 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* === Color System (HSL for Smooth Modulation) === */
+  --hue: 210;                /* Base blue (calm yet engaging) */
+  --sat: 100%;               /* Full saturation for vibrancy */
+  --light-light: 98%;        /* Light mode brightness */
+  --light-dark: 12%;         /* Dark mode brightness */
+  
+  --background: hsl(var(--hue), var(--sat), var(--light-light));
+  --foreground: hsl(var(--hue), var(--sat), calc(var(--light-light) - 85%));
+  --accent: hsl(calc(var(--hue) + 30), 85%, 60%); /* Complementary accent */
+
+  /* === Typography System (Minor Third: 1.2 Ratio) === */
+  --text-base: 1rem;         /* 16px base */
+  --text-ratio: 1.2;         /* Harmonious scaling */
+  --text-sm: clamp(0.833rem, 0.95vw, 0.9rem);    /* Captions */
+  --text-md: var(--text-base);                   /* Body text */
+  --text-lg: clamp(1.2rem, 1.25vw, 1.44rem);    /* h4 */
+  --text-xl: clamp(1.44rem, 1.5vw, 1.728rem);   /* h3 */
+  --text-2xl: clamp(1.728rem, 1.75vw, 2.074rem); /* h2 */
+  --text-3xl: clamp(2.074rem, 2vw, 2.488rem);    /* h1 */
+
+  /* === Spacing (Golden Ratio: 1.618) === */
+  --space-unit: 1rem;
+  --space-sm: calc(var(--space-unit) / 1.618);
+  --space-md: var(--space-unit);
+  --space-lg: calc(var(--space-unit) * 1.618);
+  --space-xl: calc(var(--space-lg) * 1.618);
+
+  /* === Motion Parameters === */
+  --float-amplitude: 12px;
+  --float-duration: 8s;
+  --pulse-duration: 3s;
 }
+
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* === Dark Mode (Smooth Transition) === */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: hsl(var(--hue), var(--sat), var(--light-dark));
+    --foreground: hsl(var(--hue), var(--sat), calc(var(--light-dark) + 85%));
+    --accent: hsl(calc(var(--hue) + 30), 85%, 65%);
   }
 }
 
+/* === Base Styles === */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.618; /* Golden Ratio */
+  transition: 
+    background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+/* === Typography Hierarchy === */
+h1 { font-size: var(--text-3xl); line-height: 1.3; }
+h2 { font-size: var(--text-2xl); line-height: 1.35; }
+h3 { font-size: var(--text-xl); line-height: 1.4; }
+h4 { font-size: var(--text-lg); line-height: 1.45; }
+small, .text-sm { font-size: var(--text-sm); }
+
+/* === Hypnotic Animations === */
+
+/* Golden Float (Sinusoidal Rhythm) */
+@keyframes golden-float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0.01deg); 
+  }
+  25% { 
+    transform: 
+      translateY(calc(-1 * var(--float-amplitude))) 
+      rotate(0.5deg); 
+  }
+  75% { 
+    transform: 
+      translateY(calc(var(--float-amplitude) * 0.5)) 
+      rotate(-0.5deg); 
+  }
 }
 
-@keyframes float-delay {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+/* Isochronic Pulse (3Hz Attention Rhythm) */
+@keyframes isochronic-pulse {
+  0%, 100% { 
+    opacity: 0.96; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.03); 
+  }
 }
 
-.animate-float-slow {
-  animation: float-slow 8s ease-in-out infinite;
+/* Animation Classes */
+.animate-golden-float {
+  animation: 
+    golden-float var(--float-duration) cubic-bezier(0.37, 0, 0.63, 1) infinite,
+    isochronic-pulse var(--pulse-duration) ease-in-out infinite;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
 }
 
-.animate-float-delay {
-  animation: float-delay 10s ease-in-out infinite;
+.animate-isochronic-pulse {
+  animation: isochronic-pulse var(--pulse-duration) cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  will-change: transform, opacity;
+}
+
+/* === Accessibility Overrides === */
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-"] {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* === Utility Classes === */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
 }

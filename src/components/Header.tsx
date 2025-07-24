@@ -1,12 +1,15 @@
+
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   const navLinks = [
     { href: '#services', label: 'Solutions' },
@@ -21,31 +24,33 @@ export default function Header() {
         role="navigation"
         aria-label="Main navigation"
       >
-        <Link 
-          href="/" 
-          className="flex items-center gap-3 group"
-          aria-label="Home"
-        >
-          <div className="w-10 h-10 rounded-lg overflow-hidden">
-            <img
-              src="/SkeithLogo.svg"
-              alt="Skeith Studio Logo"
-              className="w-full h-full object-contain"
-              loading="eager"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-                (e.target as HTMLElement).nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            {/* Fallback text if image fails to load */}
-            <span className="hidden w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-medium text-lg">
-              SS
-            </span>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
-            Skeith Studio
-          </h1>
-        </Link>
+<Link 
+      href="/" 
+      className="flex items-center gap-3 group"
+      aria-label="Home"
+    >
+      <div className="w-10 h-10 rounded-lg overflow-hidden relative">
+        {!logoFailed ? (
+          <Image
+            src="/SkeithLogo.svg"
+            alt="Skeith Studio Logo"
+            className="object-contain"
+            fill
+            sizes="40px"
+            priority
+            onError={() => setLogoFailed(true)}
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center bg-blue-100 text-blue-600 font-medium text-lg">
+            SS
+          </span>
+        )}
+      </div>
+      <h1 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+        Skeith Studio
+      </h1>
+    </Link>
+
 
         {/* Desktop Navigation */}
         <ul className="hidden md:flex gap-8 font-medium text-gray-700">

@@ -26,7 +26,7 @@ export default function Process() {
     <section id="process" className="py-12 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-medium text-gray-900 mb-2">How We'll Work Together</h2>
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">How We&apos;ll Work Together</h2>
           <p className="text-gray-600">
             A straightforward process designed for small business owners
           </p>

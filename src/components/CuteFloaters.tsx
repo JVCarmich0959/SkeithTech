@@ -1,11 +1,15 @@
+"use client";
+
+import { motion } from "framer-motion";
+import type { Variants, Transition } from "framer-motion";
 import type { CSSProperties } from "react";
 
-// Type definitions
 type AmbientElement = {
+  id: string;
   shape: "rectangle" | "circle";
   size: number;
   position: {
-    top: string;
+    top?: string;
     left?: string;
     right?: string;
     bottom?: string;
@@ -13,52 +17,61 @@ type AmbientElement = {
   color: string;
   opacity: number;
   animation: {
-    type: "float-slow" | "float-delay";
-    delay: string;
+    type: "float" | "pulse" | "drift";
+    duration: number;
+    delay?: number;
     rotation?: number;
+    direction?: "normal" | "reverse" | "alternate";
   };
 };
 
 type GridConfig = {
   cellSize: number;
   lineColor: string;
+  lineWidth: number;
   opacity: number;
 };
 
-// Configuration
 const AMBIENT_ELEMENTS: AmbientElement[] = [
   {
+    id: "elem-1",
     shape: "rectangle",
     size: 80,
     position: { top: "15%", left: "10%" },
-    color: "bg-blue-600",
+    color: "rgba(37, 99, 235, 0.05)", // blue-600
     opacity: 0.05,
     animation: {
-      type: "float-slow",
-      delay: "0s",
+      type: "float",
+      duration: 25,
+      delay: 0,
       rotation: 12,
+      direction: "alternate"
     },
   },
   {
+    id: "elem-2",
     shape: "circle",
     size: 120,
     position: { top: "65%", right: "15%" },
-    color: "bg-gray-800",
+    color: "rgba(31, 41, 55, 0.03)", // gray-800
     opacity: 0.03,
     animation: {
-      type: "float-delay",
-      delay: "3s",
+      type: "drift",
+      duration: 30,
+      delay: 3,
     },
   },
   {
+    id: "elem-3",
     shape: "rectangle",
     size: 60,
     position: { bottom: "20%", left: "20%" },
-    color: "bg-blue-400",
+    color: "rgba(96, 165, 250, 0.04)", // blue-400
     opacity: 0.04,
     animation: {
-      type: "float-delay",
-      delay: "5s",
+      type: "pulse",
+      duration: 15,
+      delay: 5,
       rotation: -12,
     },
   },
@@ -66,60 +79,93 @@ const AMBIENT_ELEMENTS: AmbientElement[] = [
 
 const GRID_CONFIG: GridConfig = {
   cellSize: 40,
-  lineColor: "rgba(0,0,0,0.02)",
+  lineColor: "rgba(0, 0, 0, 0.02)",
+  lineWidth: 1,
   opacity: 1,
 };
 
-// Utility functions
-const getShapeClass = (shape: AmbientElement["shape"]) => 
-  shape === "circle" ? "rounded-full" : "rounded-lg";
-
-const getAnimationClass = (animation: AmbientElement["animation"]) => 
-  `animate-${animation.type} delay-[${animation.delay}]`;
-
-const getRotationStyle = (rotation?: number): CSSProperties => 
-  rotation ? { transform: `rotate(${rotation}deg)` } : {};
-
 const generateGridStyle = (config: GridConfig): CSSProperties => ({
   backgroundImage: `
-    linear-gradient(to right, ${config.lineColor} 1px, transparent 1px),
-    linear-gradient(to bottom, ${config.lineColor} 1px, transparent 1px)
+    linear-gradient(to right, ${config.lineColor} ${config.lineWidth}px, transparent ${config.lineWidth}px),
+    linear-gradient(to bottom, ${config.lineColor} ${config.lineWidth}px, transparent ${config.lineWidth}px)
   `,
   backgroundSize: `${config.cellSize}px ${config.cellSize}px`,
   opacity: config.opacity,
 });
 
-// Main Component
+const getBorderRadius = (shape: AmbientElement["shape"]): string => 
+  shape === "circle" ? "50%" : "8px";
+
+const AmbientElement = ({ element }: { element: AmbientElement }) => {
+  const baseTransition: Transition = {
+    duration: element.animation.duration,
+    repeat: Infinity,
+    repeatType: "loop" as const,
+    ease: "easeInOut",
+    delay: element.animation.delay
+  };
+
+  const floatVariants: Variants = {
+    hidden: { y: 0, x: 0 },
+    visible: {
+      y: [0, -15, 0, 5, 0],
+      x: [0, 5, 0, -5, 0],
+      transition: baseTransition
+    }
+  };
+
+  const pulseVariants: Variants = {
+    hidden: { scale: 1, opacity: element.opacity },
+    visible: {
+      scale: [1, 1.05, 1],
+      opacity: [element.opacity, element.opacity * 1.5, element.opacity],
+      transition: baseTransition
+    }
+  };
+
+  const driftVariants: Variants = {
+    hidden: { x: 0, rotate: 0 },
+    visible: {
+      x: [0, 10, 0, -10, 0],
+      rotate: [0, 5, 0, -5, 0],
+      transition: baseTransition
+    }
+  };
+
+  const variants = {
+    float: floatVariants,
+    pulse: pulseVariants,
+    drift: driftVariants
+  }[element.animation.type];
+
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        width: `${element.size}px`,
+        height: `${element.size}px`,
+        backgroundColor: element.color,
+        borderRadius: getBorderRadius(element.shape),
+        ...element.position,
+      }}
+      variants={variants}
+      initial="hidden"
+      animate="visible"
+    />
+  );
+};
+
 export default function AmbientElements() {
   return (
-    <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[1] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
       {/* Floating elements */}
-      {AMBIENT_ELEMENTS.map((element, index) => (
-        <div
-          key={index}
-          className={`absolute ${element.color}`}
-          style={{
-            width: `${element.size}px`,
-            height: `${element.size}px`,
-            top: element.position.top,
-            left: element.position.left,
-            right: element.position.right,
-            bottom: element.position.bottom,
-            opacity: element.opacity,
-            ...getRotationStyle(element.animation.rotation),
-          }}
-          className={[
-            "absolute",
-            element.color,
-            getShapeClass(element.shape),
-            getAnimationClass(element.animation),
-          ].join(" ")}
-        />
+      {AMBIENT_ELEMENTS.map((element) => (
+        <AmbientElement key={element.id} element={element} />
       ))}
 
       {/* Grid overlay */}
       <div 
-        className="absolute inset-0" 
+        className="absolute inset-0 pointer-events-none" 
         style={generateGridStyle(GRID_CONFIG)} 
       />
     </div>
