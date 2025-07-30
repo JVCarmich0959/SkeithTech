@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bot, Send, X, MessageCircle, Loader2 } from 'lucide-react'
 
-// Types
 type Message = {
   id: string
   text: string
@@ -12,48 +11,25 @@ type Message = {
   options?: string[]
 }
 
-type BookingState = {
-  name: string
-  email: string
-  selectedDay: string
-  selectedTime: string
+// Unique ID generator
+let messageIdCounter = 0
+const generateUniqueId = () => {
+  messageIdCounter += 1
+  return `${Date.now()}-${messageIdCounter}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-type ConversationStage = 
-  | 'start' 
-  | 'name' 
-  | 'email' 
-  | 'select_day' 
-  | 'select_time' 
-  | 'confirm' 
-  | 'done'
-
-interface ScheduleBotProps {
-  forceOpen?: boolean
-  onOpenChange?: (isOpen: boolean) => void
-  user?: {
-    name?: string
-    email?: string
+const initialMessages: Message[] = [
+  {
+    id: generateUniqueId(),
+    text: "Hi there! I'm Poppi!, your scheduling assistant. Ready to book a consultation?",
+    sender: 'bot',
+    options: ["Yes, let's schedule", "Tell me about services", "Talk to a human"]
   }
-}
+]
 
-// Constants
-const BUSINESS_CONFIG = {
-  name: "Poppi",
-  services: ["AI Automation", "Custom Software", "Process Optimization"],
-  consultationFee: 15,
-  availableDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-  workingHours: { start: 9, end: 17 } // 9am - 5pm
-}
-
-// Helper functions
-const generateUniqueId = (() => {
-  let counter = 0
-  return () => `${Date.now()}-${counter++}-${Math.random().toString(36).slice(2, 9)}`
-})()
-
-const getNextDateFromWeekday = (weekday: string) => {
-  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+// Helper: Convert weekday to next date string (YYYY-MM-DD)
+function getNextDateFromWeekday(weekday: string) {
+  const dayNames = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"]
   const today = new Date()
   const todayIdx = today.getDay()
   const targetIdx = dayNames.indexOf(weekday.toLowerCase())
@@ -64,64 +40,61 @@ const getNextDateFromWeekday = (weekday: string) => {
   return targetDate.toISOString().split('T')[0]
 }
 
-const getInitialMessages = (userName?: string): Message[] => [
-  {
-    id: generateUniqueId(),
-    text: userName 
-      ? `Hi ${userName}! I'm ${BUSINESS_CONFIG.name}, your scheduling assistant. Ready to book a consultation?` 
-      : `Hi there! I'm ${BUSINESS_CONFIG.name}, your scheduling assistant. Ready to book a consultation?`,
-    sender: 'bot',
-    options: ["Yes, let's schedule", "Tell me about services"]
-  }
-]
+interface ScheduleBotProps {
+  forceOpen?: boolean
+  onOpenChange?: (isOpen: boolean) => void
+}
 
-// Main Component
-export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleBotProps = {}) {
-  // State
-  const [messages, setMessages] = useState<Message[]>(getInitialMessages(user?.name))
+export default function ScheduleBot({ forceOpen, onOpenChange }: ScheduleBotProps = {}) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [stage, setStage] = useState<ConversationStage>('start')
-  const [booking, setBooking] = useState<BookingState>({
-    name: user?.name || '',
-    email: user?.email || '',
-    selectedDay: '',
-    selectedTime: ''
-  })
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Effects
+  // Handle external control
   useEffect(() => {
     if (forceOpen !== undefined && forceOpen !== isOpen) {
       setIsOpen(forceOpen)
     }
   }, [forceOpen, isOpen])
 
+  // Notify parent of state changes
   useEffect(() => {
     onOpenChange?.(isOpen)
   }, [isOpen, onOpenChange])
+
+  // Booking state & conversation stage
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [selectedDay, setSelectedDay] = useState('')
+  const [selectedTime, setSelectedTime] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [stage, setStage] = useState<'start' | 'name' | 'email' | 'select_day' | 'select_time' | 'confirm' | 'done'>('start')
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Message helpers
-  const addMessage = (sender: 'bot' | 'user', text: string, options?: string[]) => {
-    const newMessage: Message = {
+  const addBotMessage = (text: string, options?: string[]) => {
+    const botMessage: Message = {
       id: generateUniqueId(),
       text,
-      sender,
+      sender: 'bot',
       options
     }
-    setMessages(prev => [...prev, newMessage])
+    setMessages(prev => [...prev, botMessage])
   }
 
-  const addBotMessage = (text: string, options?: string[]) => addMessage('bot', text, options)
-  const addUserMessage = (text: string) => addMessage('user', text)
+  const addUserMessage = (text: string) => {
+    const userMessage: Message = {
+      id: generateUniqueId(),
+      text,
+      sender: 'user'
+    }
+    setMessages(prev => [...prev, userMessage])
+  }
 
-  // API calls
   const fetchAvailableTimes = async (day: string) => {
     setLoading(true)
     try {
@@ -130,26 +103,13 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
       if (!res.ok) throw new Error('Failed to fetch availability')
       const data = await res.json()
 
-      // Filter times to only include business hours
-      const filteredSlots = data.availableSlots?.filter((slot: { time: string }) => {
-        const hour = parseInt(slot.time.split(':')[0])
-        return hour >= BUSINESS_CONFIG.workingHours.start && 
-               hour < BUSINESS_CONFIG.workingHours.end
-      }) || []
-
-      if (filteredSlots.length > 0) {
-        addBotMessage(
-          `Available times on ${day} (${BUSINESS_CONFIG.workingHours.start}am-${BUSINESS_CONFIG.workingHours.end - 12}pm):`,
-          filteredSlots.map((slot: { displayTime: string }) => slot.displayTime)
-        )
+      if (data.availableSlots && data.availableSlots.length > 0) {
+        addBotMessage(`Available times on ${day}:`, data.availableSlots.map((slot: { displayTime: string }) => slot.displayTime))
         setStage('select_time')
       } else {
-        addBotMessage(
-          `No available times on ${day} during business hours. Try another day:`,
-          BUSINESS_CONFIG.availableDays.map(day => `Try ${day}`).concat(["Other"])
-        )
+        addBotMessage(`Sorry, no available times found on ${day}. Would you like to:`, ["Try Monday", "Try Wednesday", "Try Another Day"])
         setStage('select_day')
-        setBooking(prev => ({ ...prev, selectedDay: '' }))
+        setSelectedDay('')
       }
     } catch {
       addBotMessage("Oops, something went wrong fetching times. Try again later.")
@@ -158,18 +118,30 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
     }
   }
 
+  const handleAlternativeSelection = (option: string) => {
+    if (option === 'Try Another Day') {
+      addBotMessage("What day would you prefer?", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+      setStage('select_day')
+    } else if (option.startsWith('Try ')) {
+      const day = option.replace('Try ', '')
+      setSelectedDay(day)
+      fetchAvailableTimes(day)
+    }
+  }
+
   const handlePayment = async () => {
     setLoading(true)
     try {
-      // Validate data
-      if (!booking.name || !booking.email || !booking.selectedDay || !booking.selectedTime) {
+      // Validate required data before making API call
+      if (!name || !email || !selectedDay || !selectedTime) {
         addBotMessage("Missing booking information. Let's start over.")
         setStage('start')
         return
       }
 
+      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(booking.email)) {
+      if (!emailRegex.test(email)) {
         addBotMessage("Invalid email address. Please provide a valid email.")
         addBotMessage("What's your email address?")
         setStage('email')
@@ -177,22 +149,25 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
       }
 
       const query = new URLSearchParams({
-        name: booking.name,
-        email: booking.email,
-        slot: `${booking.selectedDay} ${booking.selectedTime}`
+        name,
+        email,
+        slot: `${selectedDay} ${selectedTime}`
       }).toString()
+
+      console.log('Making payment request with:', { name, email, slot: `${selectedDay} ${selectedTime}` })
 
       const res = await fetch(`/api/create-checkout-session?${query}`)
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('Payment API error:', errorData)
         throw new Error(`HTTP ${res.status}: ${errorData.error || 'Payment failed'}`)
       }
 
       const data = await res.json()
       if (data.url) {
         addBotMessage("Redirecting to payment...")
-        window.location.href = data.url
+        window.location.href = data.url // Redirect to Stripe checkout
         setStage('done')
       } else {
         addBotMessage("Payment setup failed. Please try again or contact support.")
@@ -206,88 +181,78 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
     }
   }
 
-  // Conversation flow
   const handleNextStep = (userText: string) => {
     if (loading) return
 
-    const lowerText = userText.toLowerCase()
+    const lower = userText.toLowerCase()
     addUserMessage(userText)
 
     switch (stage) {
       case 'start':
-        if (lowerText.includes('schedule') || lowerText.includes('book')) {
+        if (lower.includes('schedule')) {
           addBotMessage("Great! What's your name?")
           setStage('name')
-        } else if (lowerText.includes('service')) {
-          addBotMessage(
-            `We offer ${BUSINESS_CONFIG.services.join(', ')}. Which interests you?`,
-            BUSINESS_CONFIG.services
-          )
+        } else if (lower.includes('service')) {
+          addBotMessage("We offer AI automation, custom software, and business optimization. Which interests you?", [
+            "AI Automation", "Custom Software", "Process Optimization"
+          ])
         } else {
           addBotMessage("I'll connect you with our team. Anything else I can help with?", ["Yes", "No thanks"])
         }
         break
 
       case 'name':
-        setBooking(prev => ({ ...prev, name: userText }))
+        setName(userText)
         addBotMessage(`Nice to meet you, ${userText}! What's your email address?`)
         setStage('email')
         break
 
       case 'email':
+        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(userText)) {
           addBotMessage("Please enter a valid email address (e.g., you@example.com)")
           return
         }
-        setBooking(prev => ({ ...prev, email: userText }))
-        addBotMessage(
-          `I'm available ${BUSINESS_CONFIG.availableDays.join(', ')} from ${BUSINESS_CONFIG.workingHours.start}am-${BUSINESS_CONFIG.workingHours.end - 12}pm. Which day works best?`,
-          BUSINESS_CONFIG.availableDays.concat(["Other"])
-        )
+        setEmail(userText)
+        addBotMessage("Which day works best for you?", ["Monday", "Wednesday", "Friday", "Other"])
         setStage('select_day')
         break
 
       case 'select_day':
         if (userText === 'Other') {
-          addBotMessage("What day would you prefer?", BUSINESS_CONFIG.availableDays)
+          addBotMessage("What day would you prefer?", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
         } else if (userText.startsWith('Try ')) {
-          const day = userText.replace('Try ', '')
-          setBooking(prev => ({ ...prev, selectedDay: day }))
-          fetchAvailableTimes(day)
+          handleAlternativeSelection(userText)
         } else {
-          setBooking(prev => ({ ...prev, selectedDay: userText }))
+          setSelectedDay(userText)
           fetchAvailableTimes(userText)
         }
         break
 
       case 'select_time':
-        setBooking(prev => ({ ...prev, selectedTime: userText }))
+        setSelectedTime(userText)
         addBotMessage(
-          `Confirm ${BUSINESS_CONFIG.name} consultation on ${booking.selectedDay} at ${userText}?`,
-          [`Pay $${BUSINESS_CONFIG.consultationFee} to Confirm`]
+          `Perfect! You selected ${selectedDay} at ${userText}. Please confirm your $15 consultation.`,
+          ["Pay $15 to Confirm"]
         )
         setStage('confirm')
         break
 
       case 'confirm':
-        if (lowerText.includes('pay') || lowerText.includes('confirm')) {
+        if (lower.includes('pay')) {
           handlePayment()
         } else {
-          addBotMessage(
-            `Please confirm your $${BUSINESS_CONFIG.consultationFee} payment to finalize.`,
-            [`Pay $${BUSINESS_CONFIG.consultationFee} to Confirm`]
-          )
+          addBotMessage("Please confirm your payment to finalize the booking.", ["Pay $15 to Confirm"])
         }
         break
 
       case 'done':
-        addBotMessage("Your booking is confirmed! Anything else I can help with?", ["Yes", "No thanks"])
+        addBotMessage("Thank you! Your booking is confirmed. Anything else I can help with?", ["Yes", "No thanks"])
         break
     }
   }
 
-  // UI handlers
   const handleSend = () => {
     if (!input.trim()) return
     const currentInput = input.trim()
@@ -324,7 +289,7 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
                     <Bot className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">{BUSINESS_CONFIG.name}</h3>
+                    <h3 className="font-bold text-lg">Skeith</h3>
                     <p className="text-xs opacity-90">Scheduling Assistant</p>
                   </div>
                 </div>
@@ -416,7 +381,7 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
                         className="w-2 h-2 bg-blue-500 rounded-full"
                       />
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Typing...</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Skeith is typing...</span>
                   </div>
                 </motion.div>
               )}
@@ -458,6 +423,7 @@ export default function ScheduleBot({ forceOpen, onOpenChange, user }: ScheduleB
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        data-testid="chat-toggle"
         className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-300 relative overflow-hidden"
         style={{
           boxShadow: isOpen 
