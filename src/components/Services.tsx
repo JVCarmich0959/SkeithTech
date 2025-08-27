@@ -10,8 +10,8 @@ export default function Services() {
       title: 'Website Development', 
       desc: 'Professional websites that look great and work perfectly on all devices.',
       pricing: {
-        starting: '$800',
-        range: '$800 - $5,000',
+        starting: '$200',
+        range: '$200 - $600',
         note: 'Based on pages and features'
       },
       features: [
@@ -30,8 +30,8 @@ export default function Services() {
       title: 'Website Revitalization', 
       desc: 'Breathe new life into your existing website with modern design and improved performance.',
       pricing: {
-        starting: '$400',
-        range: '$400 - $2,500',
+        starting: '$75',
+        range: '$75 - $300',
         note: 'Depends on current site condition'
       },
       features: [
@@ -44,34 +44,14 @@ export default function Services() {
     { 
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-        </svg>
-      ),
-      title: 'Mobile Apps', 
-      desc: 'Custom mobile applications for iOS and Android that your customers will actually use.',
-      pricing: {
-        starting: '$2,500',
-        range: '$2,500 - $15,000',
-        note: 'Varies by app complexity'
-      },
-      features: [
-        'iOS & Android compatible',
-        'Native performance',
-        'App store deployment',
-        '90-day warranty'
-      ]
-    },
-    { 
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l 1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
         </svg>
       ), 
       title: 'Process Automation', 
-      desc: 'Simple bots and tools that handle your repetitive tasks, saving you 5-15 hours per week.',
+      desc: 'Simple tools that handle your repetitive tasks, saving you 5-15 hours per week.',
       pricing: {
-        starting: '$300',
-        range: '$300 - $2,500',
+        starting: '$100',
+        range: '$100 - $400',
         note: 'Depends on complexity'
       },
       features: [
@@ -88,17 +68,17 @@ export default function Services() {
         </svg>
       ),
       title: 'Business Tools', 
-      desc: 'Custom applications built specifically for your workflow - no more generic software struggles.',
+      desc: 'Simple custom tools built specifically for your workflow - no more generic software struggles.',
       pricing: {
-        starting: '$1,200',
-        range: '$1,200 - $8,000',
+        starting: '$250',
+        range: '$250 - $800',
         note: 'Based on features needed'
       },
       features: [
         'Custom web applications',
-        'Database integration',
-        'User management systems',
-        '90-day warranty'
+        'Basic database integration',
+        'Simple user management',
+        '60-day warranty'
       ]
     },
     { 
@@ -109,17 +89,37 @@ export default function Services() {
         </svg>
       ),
       title: 'Data Dashboards', 
-      desc: 'Visual dashboards that show exactly what matters to your business, updated automatically.',
+      desc: 'Simple visual dashboards that show exactly what matters to your business.',
       pricing: {
-        starting: '$600',
-        range: '$600 - $3,500',
+        starting: '$150',
+        range: '$150 - $500',
         note: 'Varies by data sources'
       },
       features: [
-        'Real-time reporting',
-        'Custom visualizations',
-        'Multiple data sources',
-        '60-day support included'
+        'Basic reporting',
+        'Simple visualizations',
+        'Data from spreadsheets',
+        '30-day support included'
+      ]
+    },
+    { 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLineCap="round" strokeLineJoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      title: 'Quick Fixes', 
+      desc: 'Small website updates, bug fixes, and basic tech help to get you unstuck.',
+      pricing: {
+        starting: '$50',
+        range: '$50 - $150',
+        note: 'Simple fixes and updates'
+      },
+      features: [
+        'Website bug fixes',
+        'Content updates',
+        'Basic tech support',
+        'Same-week turnaround'
       ]
     },
   ]
@@ -128,9 +128,9 @@ export default function Services() {
     <section id="services" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Complete Digital Solutions</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Affordable Digital Solutions</h2>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-            From simple website updates to complex mobile apps - practical technology solutions for Goldsboro businesses
+            Practical technology solutions for Goldsboro businesses - priced for real local budgets
           </p>
         </div>
         
@@ -194,35 +194,35 @@ export default function Services() {
           
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="text-green-600 font-bold text-lg mb-2">Starter Projects</div>
-              <div className="text-2xl font-bold text-gray-900 mb-2">$300 - $800</div>
+              <div className="text-green-600 font-bold text-lg mb-2">Quick Solutions</div>
+              <div className="text-2xl font-bold text-gray-900 mb-2">$50 - $200</div>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>Website updates & fixes</li>
-                <li>Simple automation tools</li>
-                <li>Basic dashboard setup</li>
-                <li>Quick turnaround (1-2 weeks)</li>
+                <li>Website fixes & updates</li>
+                <li>Simple automation</li>
+                <li>Basic tech support</li>
+                <li>Quick turnaround (3-7 days)</li>
               </ul>
             </div>
             
             <div className="bg-white rounded-lg p-6 shadow-sm border-2 border-blue-200">
-              <div className="text-blue-600 font-bold text-lg mb-2">Standard Solutions</div>
-              <div className="text-2xl font-bold text-gray-900 mb-2">$800 - $3,500</div>
+              <div className="text-blue-600 font-bold text-lg mb-2">Standard Projects</div>
+              <div className="text-2xl font-bold text-gray-900 mb-2">$200 - $600</div>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>Complete websites</li>
                 <li>Custom business tools</li>
-                <li>Data integration projects</li>
-                <li>Timeline: 2-6 weeks</li>
+                <li>Simple dashboards</li>
+                <li>Timeline: 1-3 weeks</li>
               </ul>
             </div>
             
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="text-purple-600 font-bold text-lg mb-2">Enterprise Level</div>
-              <div className="text-2xl font-bold text-gray-900 mb-2">$3,500+</div>
+              <div className="text-purple-600 font-bold text-lg mb-2">Advanced Solutions</div>
+              <div className="text-2xl font-bold text-gray-900 mb-2">$600+</div>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>Mobile applications</li>
                 <li>Complex integrations</li>
                 <li>Multi-user systems</li>
-                <li>Timeline: 6-12 weeks</li>
+                <li>Advanced automation</li>
+                <li>Timeline: 3-8 weeks</li>
               </ul>
             </div>
           </div>
